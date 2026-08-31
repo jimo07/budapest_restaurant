@@ -1,0 +1,90 @@
+$red: #a52a25;
+$ink: #25231f;
+$paper: #f5f0e8;
+$cream: #fffaf2;
+$line: #ddd3c4;
+
+.app-shell { max-width: 520px; margin: auto; min-height: 100vh; background: $paper; padding-bottom: 100px; }
+.topbar { height: 66px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 20; background: rgba(245,240,232,.94); backdrop-filter: blur(12px); border-bottom: 1px solid rgba($line,.7); }
+.brand { display: flex; align-items: center; gap: 10px; font-family: 'DM Serif Display'; font-size: 23px; letter-spacing: .4px; cursor: pointer; }
+.brand-mark { display: grid; place-items: center; width: 31px; height: 31px; border-radius: 50%; background: $red; color: white; font-size: 19px; }
+.orders-link,.icon-btn,.text-btn { border: 0; background: none; color: $ink; font-weight: 600; }
+.icon-btn { font-size: 24px; min-width: 36px; }
+.hero { padding: 48px 24px 34px; background: radial-gradient(circle at 90% 0,#e7cdb1 0,transparent 42%); }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: $red; text-transform: uppercase; }
+.hero h1,.page-title,.success-page h1 { font-family: 'DM Serif Display','Noto Sans SC'; font-weight: 400; font-size: 42px; line-height: 1.16; margin: 12px 0; }
+.hero h1 em { color: $red; font-style: normal; }
+.hero-copy,.intro { color: #756e63; line-height: 1.8; font-size: 14px; max-width: 320px; }
+.session-strip { display: flex; gap: 10px; overflow: auto; padding: 18px 20px 10px; }
+.session-strip button { min-width: 112px; border: 1px solid $line; background: transparent; border-radius: 14px; padding: 12px; text-align: left; }
+.session-strip button strong,.session-strip button span { display: block; }
+.session-strip button span { font-size: 12px; color: #766f65; margin-top: 4px; }
+.session-strip .active { background: $ink; color: white; border-color: $ink; }
+.session-strip .active span { color: #ddd; }
+.service-note { margin: 4px 22px 18px; font-size: 12px; color: #71695e; }
+.pulse { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #648856; margin-right: 6px; }
+.category-section { padding: 0 20px 20px; }
+.section-title { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid $line; margin-bottom: 12px; }
+.section-title h2,.panel h2 { font-family: 'DM Serif Display','Noto Sans SC'; font-size: 25px; font-weight: 500; }
+.section-title span { font-size: 12px; color: #888075; }
+.product-card { display: grid; grid-template-columns: 92px 1fr; gap: 14px; padding: 14px 0; border-bottom: 1px solid $line; }
+.product-visual { height: 92px; border-radius: 12px; background: linear-gradient(145deg,#d9b994,#99633f); color: white; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; }
+.product-visual span { font-size: 10px; border: 1px solid rgba(255,255,255,.6); align-self: flex-start; padding: 2px 6px; border-radius: 10px; }
+.product-visual b { font-family: 'DM Serif Display'; font-size: 36px; align-self: flex-end; }
+.product-info { display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+.product-name { font-weight: 700; font-size: 16px; }
+.product-info p { font-size: 12px; color: #7b746a; line-height: 1.5; margin: 6px 0; }
+.product-bottom { display: flex; align-items: center; justify-content: space-between; }
+.product-bottom > strong { font-family: 'DM Serif Display'; font-size: 20px; color: $red; }
+.stepper { display: flex; align-items: center; gap: 10px; }
+.stepper button { border: 1px solid $ink; background: transparent; border-radius: 50%; width: 32px; height: 32px; padding: 0; }
+.stepper button:last-child { background: $ink; color: white; }
+.soldout { opacity: .52; }
+.sold-label { font-size: 12px; }
+.cart-bar { position: fixed; z-index: 30; bottom: max(14px,env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(calc(100% - 28px),492px); background: $ink; color: white; border-radius: 18px; padding: 10px 12px 10px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 12px 30px #0005; }
+.cart-bar button,.primary { border: 0; background: $red; color: white; border-radius: 12px; padding: 13px 18px; font-weight: 700; }
+.checkout-page,.lookup-page { padding: 30px 20px; }
+.panel { background: $cream; border: 1px solid $line; border-radius: 18px; padding: 18px; margin: 16px 0; }
+.panel h2 { margin: 0 0 16px; font-size: 21px; }
+.fulfillment-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.fulfillment-grid button { border: 1px solid $line; background: white; border-radius: 12px; padding: 13px 4px; color: $ink; }
+.fulfillment-grid button b,.fulfillment-grid button span { display: block; }
+.fulfillment-grid button b { font-size: 20px; margin-bottom: 6px; }
+.fulfillment-grid button span { font-size: 12px; }
+.fulfillment-grid .active { background: $ink; color: white; border-color: $ink; }
+label { display: block; font-size: 12px; font-weight: 600; margin: 14px 0; }
+label small { font-weight: 400; color: #999; }
+input,select,textarea { width: 100%; border: 1px solid $line; background: white; border-radius: 10px; padding: 12px; margin-top: 7px; color: $ink; outline: none; }
+input:focus,select:focus,textarea:focus { border-color: $red; }
+textarea { min-height: 76px; resize: vertical; }
+.address-tools { display: flex; align-items: center; gap: 10px; margin-top: 9px; }
+.address-tools small { color: #81796e; font-weight: 400; line-height: 1.4; }
+.location-button { flex: 0 0 auto; border: 1px solid $line; border-radius: 9px; background: white; color: $ink; padding: 9px 11px; font-weight: 600; }
+.address-map { height: 180px; margin-top: 10px; border: 1px solid $line; border-radius: 12px; overflow: hidden; background: #eeeae3; }
+.line-item,.total-line { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; font-size: 13px; }
+.muted { color: #8a8379; }
+.total-line { border-top: 1px solid $line; margin-top: 8px; padding-top: 16px; font-size: 16px; }
+.total-line strong { font-family: 'DM Serif Display'; color: $red; font-size: 23px; }
+.wide { width: 100%; padding: 15px; }
+.primary:disabled { opacity: .5; }
+.fine-print { text-align: center; color: #91897e; font-size: 11px; }
+.error-banner { position: sticky; top: 72px; z-index: 40; margin: 12px 20px; background: #f9ded9; color: #8b211f; padding: 12px 14px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 13px; }
+.error-banner button { border: 0; background: none; }
+.toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 60; background: $ink; color: white; padding: 10px 18px; border-radius: 20px; font-size: 13px; }
+.state-card { margin: 20px; background: $cream; border: 1px solid $line; border-radius: 16px; padding: 28px; text-align: center; color: #746d62; }
+.success-page { text-align: center; padding: 62px 24px; }
+.success-icon { width: 70px; height: 70px; margin: auto; display: grid; place-items: center; border-radius: 50%; background: #607d57; color: white; font-size: 32px; }
+.success-page > p:not(.eyebrow) { color: #756e63; font-size: 14px; line-height: 1.7; }
+.order-ticket { background: $cream; border: 1px dashed #b8a891; border-radius: 16px; padding: 20px; margin: 28px 0; text-align: left; display: grid; grid-template-columns: 1fr auto; gap: 14px; }
+.order-ticket span { color: #81796e; font-size: 12px; }
+.order-ticket strong { font-size: 13px; }
+.order-ticket .amount { color: $red; font-size: 20px; }
+.text-btn { margin: 20px; }
+.lookup-form { margin-top: 30px; }
+.status-head { padding-bottom: 14px; margin-bottom: 10px; border-bottom: 1px solid $line; }
+.status-head span,.status-head small { display: block; }
+.status-head span { font-family: 'DM Serif Display','Noto Sans SC'; font-size: 24px; color: $red; }
+.status-head small { margin-top: 5px; color: #888; }
+.danger-btn { width: 100%; border: 1px solid $red; background: transparent; color: $red; border-radius: 10px; padding: 12px; margin-top: 18px; }
+
+@media (min-width:600px) { body { padding: 20px; } .app-shell { border-radius: 24px; overflow: hidden; box-shadow: 0 12px 50px #59452d22; } .topbar { position: sticky; } }

@@ -1,0 +1,465 @@
+$red: #a52a25;
+$cream: #fffdf8;
+$line: #dedbd3;
+$muted: #7f7b72;
+.row-actions {
+  white-space: nowrap;
+}
+.row-actions button {
+  border: 0;
+  background: none;
+  color: #3e6251;
+  padding: 5px;
+  font-weight: 600;
+}
+.row-actions .danger-link {
+  color: $red;
+}
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #17130f88;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.editor-modal {
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: $cream;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 20px 70px #0004;
+}
+.editor-modal > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid $line;
+  margin-bottom: 16px;
+}
+.editor-modal header h2 {
+  margin: 5px 0 18px;
+}
+.editor-modal header button {
+  border: 0;
+  background: none;
+  font-size: 26px;
+}
+.editor-modal form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 14px;
+}
+.editor-modal form label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.editor-modal form label b {
+  color: $red;
+  margin-left: 3px;
+}
+.editor-modal input:not([type='checkbox']),
+.editor-modal select,
+.editor-modal textarea {
+  width: 100%;
+  border: 1px solid $line;
+  background: white;
+  border-radius: 9px;
+  padding: 10px;
+  margin-top: 6px;
+  outline: none;
+}
+.editor-modal textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+.editor-modal input:focus,
+.editor-modal select:focus,
+.editor-modal textarea:focus {
+  border-color: $red;
+}
+.editor-modal .check-field {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-top: 20px;
+}
+.editor-modal form .form-error,
+.editor-modal form footer {
+  grid-column: 1/3;
+}
+.editor-modal footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid $line;
+  padding-top: 16px;
+  margin-top: 14px;
+}
+.secondary {
+  border: 1px solid $line;
+  background: white;
+  border-radius: 10px;
+  padding: 11px 18px;
+}
+.modal-tip {
+  font-size: 12px;
+  color: $muted;
+}
+.inventory-modal {
+  width: min(720px, 100%);
+}
+.inventory-head,
+.inventory-row {
+  display: grid;
+  grid-template-columns: 1.5fr 0.7fr 0.7fr;
+  gap: 10px;
+  align-items: center;
+}
+.inventory-head {
+  font-size: 10px;
+  color: $muted;
+  padding: 9px;
+}
+.inventory-row {
+  border-top: 1px solid $line;
+  padding: 9px;
+}
+.inventory-row .check-field {
+  padding: 0;
+  margin: 0;
+}
+.inventory-row input:not([type='checkbox']) {
+  margin: 0;
+}
+.inventory-modal > footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid $line;
+  padding-top: 15px;
+  margin-top: 12px;
+}
+@media (max-width: 600px) {
+  .editor-modal form {
+    grid-template-columns: 1fr;
+  }
+  .editor-modal form .form-error,
+  .editor-modal form footer {
+    grid-column: 1;
+  }
+  .inventory-head,
+  .inventory-row {
+    grid-template-columns: 1fr 90px 80px;
+  }
+  .modal-mask {
+    padding: 8px;
+  }
+}
+.package-editor {
+  grid-column: 1/3;
+  border: 1px solid $line;
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 10px;
+}
+.package-editor > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.package-editor > div:first-child button,
+.package-row button {
+  border: 0;
+  background: none;
+  color: $red;
+}
+.package-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 30px;
+  gap: 8px;
+  align-items: center;
+}
+.package-editor small {
+  display: block;
+  color: $muted;
+  padding: 15px;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .package-editor {
+    grid-column: 1;
+  }
+  .package-row {
+    grid-template-columns: 1fr 70px 28px;
+  }
+}
+.batch-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff4dc;
+  border: 1px solid #ead4a7;
+  border-radius: 10px;
+  padding: 9px 13px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+.batch-bar button:last-child {
+  border: 0;
+  background: none;
+  color: $muted;
+}
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 11px;
+}
+.pagination button {
+  border: 1px solid $line;
+  background: white;
+  border-radius: 7px;
+  padding: 7px 10px;
+}
+.pagination button:disabled {
+  opacity: 0.4;
+}
+.payment-tag {
+  display: inline-block;
+  padding: 5px 8px;
+  border-radius: 14px;
+  background: #eee;
+  font-size: 10px;
+  margin-left: 5px;
+}
+.payment-tag.paid {
+  background: #dceadd;
+  color: #3d7046;
+}
+.payment-tag.refunded {
+  background: #e4e2ed;
+  color: #5f557e;
+}
+.order-status .status-tag {
+  margin-right: 5px;
+}
+.operation-panel label {
+  display: block;
+  font-size: 11px;
+  margin: 10px 0;
+}
+.operation-panel select {
+  width: 100%;
+  border: 1px solid $line;
+  border-radius: 8px;
+  padding: 9px;
+  background: white;
+  margin-top: 5px;
+}
+.operation-button {
+  width: 100%;
+  margin-top: 10px;
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .order-drawer,
+  .order-drawer * {
+    visibility: visible;
+  }
+  .drawer-mask {
+    position: absolute;
+    background: white;
+  }
+  .order-drawer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none;
+  }
+  .order-drawer footer,
+  .drawer-head button,
+  .operation-panel {
+    display: none !important;
+  }
+}
+.quick-button {
+  border: 1px solid #9bb4a2;
+  background: #edf5ef;
+  color: #31583b;
+  border-radius: 7px;
+  padding: 6px 9px;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+}
+.quick-button:hover {
+  background: #dcecdf;
+}
+.work-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.work-actions > strong {
+  color: $red;
+}
+.list-code {
+  display: block;
+  margin-top: 5px;
+  color: #a42b25;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.drawer-code {
+  color: #a42b25;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.receipt {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: auto;
+    margin: 3mm;
+  }
+  html,
+  body {
+    width: 100%;
+    background: #fff !important;
+  }
+  .order-drawer {
+    width: 100% !important;
+    max-width: 74mm !important;
+    padding: 0 !important;
+    font-family: Arial, 'Microsoft YaHei', sans-serif;
+    color: #000 !important;
+  }
+  .order-drawer > :not(.receipt) {
+    display: none !important;
+  }
+  .receipt,
+  .receipt * {
+    display: revert;
+    visibility: visible !important;
+    box-sizing: border-box;
+  }
+  .receipt {
+    width: 100%;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .receipt header {
+    text-align: center;
+    border-bottom: 1px dashed #000;
+    padding: 0 0 8px;
+    margin-bottom: 8px;
+  }
+  .receipt header strong {
+    display: block;
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+  .receipt header span,
+  .receipt header small {
+    display: block;
+  }
+  .receipt-code {
+    text-align: center;
+    border: 2px solid #000;
+    padding: 7px;
+    margin: 8px 0;
+  }
+  .receipt-code span {
+    display: block;
+    font-weight: 700;
+  }
+  .receipt-code b {
+    display: block;
+    font-size: 31px;
+    letter-spacing: 5px;
+    line-height: 1.25;
+  }
+  .receipt-cancelled {
+    text-align: center;
+    border: 2px solid #000;
+    font-size: 18px;
+    font-weight: 900;
+    padding: 5px;
+    margin: 8px 0;
+  }
+  .receipt dl {
+    margin: 0;
+    border-bottom: 1px dashed #000;
+    padding-bottom: 6px;
+  }
+  .receipt dl div,
+  .receipt-items div {
+    display: flex !important;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 2px 0;
+  }
+  .receipt dt {
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  .receipt dd {
+    margin: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+  .receipt-items {
+    border-bottom: 1px dashed #000;
+    padding: 7px 0;
+  }
+  .receipt-items span {
+    flex: 1;
+  }
+  .receipt-items b {
+    white-space: nowrap;
+  }
+  .receipt-totals {
+    padding-top: 6px;
+  }
+  .receipt-total {
+    font-size: 16px;
+    font-weight: 900;
+  }
+  .receipt-note {
+    border-bottom: 1px dashed #000;
+    margin: 0;
+    padding: 7px 0;
+    overflow-wrap: anywhere;
+  }
+  .receipt footer {
+    display: block !important;
+    text-align: left;
+    padding-top: 7px;
+  }
+  .receipt footer span,
+  .receipt footer b {
+    display: block;
+    text-align: center;
+  }
+  .receipt footer b {
+    margin-top: 6px;
+    font-size: 12px;
+  }
+}
