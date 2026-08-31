@@ -1,0 +1,19 @@
+{
+  "name": "budapest-restaurant",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "dev": "bash scripts/dev.sh",
+    "build": "pnpm --recursive --if-present build",
+    "type-check": "pnpm --recursive --if-present type-check",
+    "lint": "bash scripts/lint.sh",
+    "test": "bash scripts/test.sh",
+    "bootstrap": "bash scripts/bootstrap.sh",
+    "seed": "bash scripts/seed-demo.sh"
+  }
+}
+

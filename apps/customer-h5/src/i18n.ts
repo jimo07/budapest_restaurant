@@ -1,8 +1,9 @@
 import { onMounted, onUnmounted, ref, nextTick } from 'vue'
+import { isLanguage, type Language } from '@budapest/shared'
 
-export type Language = 'zh' | 'en' | 'hu'
+export type { Language } from '@budapest/shared'
 const saved = localStorage.getItem('budapest-language')
-export const language = ref<Language>(saved === 'en' || saved === 'hu' ? saved : 'zh')
+export const language = ref<Language>(isLanguage(saved) ? saved : 'zh')
 
 const en: Record<string, string> = {
   '正在定位…': 'Locating…',

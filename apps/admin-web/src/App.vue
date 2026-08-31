@@ -11,6 +11,13 @@ import type {
   PageData,
   ResourceName,
 } from './types'
+import {
+  FULFILLMENT_STATUS_FLOW,
+  ORDER_STATUS_FLOW,
+  formatHuf,
+  type FulfillmentStatus,
+  type OrderStatus,
+} from '@budapest/shared'
 
 type View =
   | 'dashboard'
@@ -227,12 +234,8 @@ const fulfillmentText: Record<string, string> = {
   takeaway: '自取',
   dine_in: '堂食',
 }
-const nextStatus: Record<string, string> = {
-  pending: 'confirmed',
-  confirmed: 'preparing',
-  preparing: 'ready',
-  ready: 'fulfilling',
-  fulfilling: 'completed',
+function nextOrderStatus(value: unknown) {
+  return ORDER_STATUS_FLOW[String(value) as OrderStatus]
 }
 const nextStatusAction: Record<string, string> = {
   pending: '确认订单',
@@ -241,13 +244,8 @@ const nextStatusAction: Record<string, string> = {
   ready: '开始履约',
   fulfilling: '完成订单',
 }
-const nextFulfillment: Record<string, string> = {
-  waiting_delivery: 'delivering',
-  delivering: 'delivered',
-  waiting_pickup: 'picked_up',
-  waiting_arrival: 'seated',
-  seated: 'served',
-  served: 'dine_completed',
+function nextFulfillmentStatus(value: unknown) {
+  return FULFILLMENT_STATUS_FLOW[String(value) as FulfillmentStatus]
 }
 const fulfillmentStatusText: Record<string, string> = {
   waiting_delivery: '待配送',
@@ -269,7 +267,7 @@ const fulfillmentActionText: Record<string, string> = {
   dine_completed: '完成堂食',
 }
 function canAdvanceFulfillmentState(status: string, fulfillmentStatus: string) {
-  const target = nextFulfillment[fulfillmentStatus]
+  const target = nextFulfillmentStatus(fulfillmentStatus)
   if (!target) return false
   if (target === 'served') return ['ready', 'fulfilling'].includes(status)
   return true
@@ -530,7 +528,7 @@ async function openOrder(id: number) {
 }
 async function advanceOrder() {
   if (!selectedOrder.value) return
-  const target = nextStatus[selectedOrder.value.status]
+  const target = nextOrderStatus(selectedOrder.value.status)
   if (!target) return
   try {
     const orderId = selectedOrder.value.id
@@ -590,7 +588,7 @@ async function batchAdvance() {
     return
   }
   const current = [...statuses][0] || ''
-  const target = nextStatus[current]
+  const target = nextOrderStatus(current)
   if (!target) {
     error.value = '所选订单没有可用的下一状态'
     return
@@ -610,7 +608,7 @@ async function batchAdvance() {
   await loadOrdersQuietly()
 }
 async function quickAdvanceOrder(item: Order) {
-  const target = nextStatus[item.status]
+  const target = nextOrderStatus(item.status)
   if (!target) return
   try {
     await api.updateStatus(item.id, target)
@@ -626,7 +624,7 @@ async function quickAdvanceOrder(item: Order) {
 }
 async function quickAdvanceFulfillment(row: Record<string, unknown>) {
   const current = String(row.fulfillment_status)
-  const target = nextFulfillment[current]
+  const target = nextFulfillmentStatus(current)
   if (!target) return
   if (target === 'seated') {
     await openOrder(Number(row.id))
@@ -671,7 +669,7 @@ async function updatePayment(status: string) {
 }
 async function advanceFulfillment() {
   if (!selectedOrder.value) return
-  const target = nextFulfillment[selectedOrder.value.fulfillment_status]
+  const target = nextFulfillmentStatus(selectedOrder.value.fulfillment_status)
   if (!target) return
   if (target === 'seated' && !selectedTableId.value) {
     error.value = '请先选择堂食桌台'
@@ -760,11 +758,7 @@ function messageOf(value: unknown) {
   return value instanceof Error ? value.message : '发生未知错误'
 }
 function money(value: string | number | undefined) {
-  return new Intl.NumberFormat('hu-HU', {
-    style: 'currency',
-    currency: 'HUF',
-    maximumFractionDigits: 0,
-  }).format(Number(value || 0))
+  return formatHuf(value)
 }
 function percent(used: number, capacity: number) {
   return capacity ? Math.min(100, Math.round((used / capacity) * 100)) : 0
@@ -1324,7 +1318,7 @@ onUnmounted(() => window.clearInterval(refreshTimer))
                   <td>{{ item.created_at }}</td>
                   <td @click.stop>
                     <button
-                      v-if="nextStatus[item.status]"
+                      v-if="nextOrderStatus(item.status)"
                       class="quick-button"
                       @click="quickAdvanceOrder(item)"
                     >
@@ -1428,7 +1422,7 @@ onUnmounted(() => window.clearInterval(refreshTimer))
                 class="quick-button"
                 @click="quickAdvanceFulfillment(row)"
               >
-                {{ fulfillmentActionText[nextFulfillment[String(row.fulfillment_status)]!] }}
+                {{ fulfillmentActionText[nextFulfillmentStatus(row.fulfillment_status)!] }}
               </button>
               <small
                 v-if="
@@ -1885,7 +1879,7 @@ onUnmounted(() => window.clearInterval(refreshTimer))
             class="primary operation-button"
             @click="advanceFulfillment"
           >
-            {{ fulfillmentActionText[nextFulfillment[selectedOrder.fulfillment_status]!] }}
+            {{ fulfillmentActionText[nextFulfillmentStatus(selectedOrder.fulfillment_status)!] }}
           </button>
         </section>
         <section>
@@ -1912,7 +1906,7 @@ onUnmounted(() => window.clearInterval(refreshTimer))
             @click="cancelAdminOrder"
           >
             取消订单</button
-          ><button v-if="nextStatus[selectedOrder.status]" class="primary" @click="advanceOrder">
+          ><button v-if="nextOrderStatus(selectedOrder.status)" class="primary" @click="advanceOrder">
             {{ nextStatusAction[selectedOrder.status] }}
           </button>
         </footer>

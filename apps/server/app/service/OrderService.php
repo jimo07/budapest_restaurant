@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace app\service;
 
 use app\domain\order\OrderNumberGenerator;
+use app\domain\order\OrderAvailabilityPolicy;
+use app\domain\order\OrderCancellationPolicy;
 use app\domain\order\OrderPriceCalculator;
 use app\domain\order\OrderStatusMachine;
+use app\domain\order\FulfillmentPolicy;
+use app\domain\order\PaymentPolicy;
 use app\enum\FulfillmentType;
 use app\exception\BusinessException;
 use app\support\QueryToken;
@@ -18,6 +22,10 @@ final class OrderService
         private readonly OrderPriceCalculator $calculator = new OrderPriceCalculator(),
         private readonly OrderNumberGenerator $numberGenerator = new OrderNumberGenerator(),
         private readonly OrderStatusMachine $statusMachine = new OrderStatusMachine(),
+        private readonly OrderCancellationPolicy $cancellationPolicy = new OrderCancellationPolicy(),
+        private readonly FulfillmentPolicy $fulfillmentPolicy = new FulfillmentPolicy(),
+        private readonly OrderAvailabilityPolicy $availabilityPolicy = new OrderAvailabilityPolicy(),
+        private readonly PaymentPolicy $paymentPolicy = new PaymentPolicy(),
     ) {}
 
     public function preview(array $payload): array
@@ -40,7 +48,7 @@ final class OrderService
                 'query_token_hash' => QueryToken::hash($token), 'session_id' => $prepared['session']['id'],
                 'fulfillment_code' => $this->numberGenerator->fulfillmentCode(),
                 'service_date' => $prepared['session']['service_date'], 'meal_type' => $prepared['session']['meal_type'],
-                'fulfillment_type' => $prepared['fulfillment_type'], 'fulfillment_status' => $this->initialFulfillmentStatus($prepared['fulfillment_type']),
+                'fulfillment_type' => $prepared['fulfillment_type'], 'fulfillment_status' => $this->fulfillmentPolicy->initialStatus($prepared['fulfillment_type']),
                 'status' => 'pending', 'payment_status' => 'unpaid', 'customer_name' => trim((string)$payload['customer_name']),
                 'customer_phone' => trim((string)$payload['customer_phone']), 'address' => $payload['address'] ?? null,
                 'delivery_lat' => $payload['delivery_lat'] ?? null, 'delivery_lng' => $payload['delivery_lng'] ?? null,
@@ -75,7 +83,7 @@ final class OrderService
         return Db::transaction(function () use ($orderNo, $token, $reason): array {
             $order = Db::name('orders')->lock(true)->where('order_no', $orderNo)->find();
             if (!$order || !QueryToken::verify($token, $order['query_token_hash'])) throw new BusinessException('订单不存在或查询凭证无效', 40420, 404);
-            if (!in_array($order['status'], ['pending', 'confirmed'], true)) throw new BusinessException('餐厅已开始制作，订单不能由顾客取消', 40922, 409);
+            $this->cancellationPolicy->assertCustomerCanCancel($order['status']);
             $items = Db::name('order_items')->where('order_id', $order['id'])->select()->toArray();
             foreach ($items as $item) Db::name('session_products')->where('session_id', $order['session_id'])->where('product_id', $item['product_id'])->dec('sold_qty', $item['quantity'])->update();
             Db::name('time_slots')->where('id', $order['time_slot_id'])->dec('used_capacity', $order['people_count'])->update();
@@ -111,32 +119,18 @@ final class OrderService
 
     public function updateFulfillment(int $orderId, string $to, int $operatorId, ?int $tableId = null): array
     {
-        $flows = [
-            'delivery' => ['waiting_delivery' => ['delivering'], 'delivering' => ['delivered'], 'delivered' => []],
-            'takeaway' => ['waiting_pickup' => ['picked_up'], 'picked_up' => []],
-            'dine_in' => ['waiting_arrival' => ['seated'], 'seated' => ['served'], 'served' => ['dine_completed'], 'dine_completed' => []],
-        ];
-        return Db::transaction(function () use ($orderId, $to, $operatorId, $tableId, $flows): array {
+        return Db::transaction(function () use ($orderId, $to, $operatorId, $tableId): array {
             $order = Db::name('orders')->lock(true)->where('id', $orderId)->find();
             if (!$order) throw new BusinessException('订单不存在', 40420, 404);
-            $allowed = $flows[$order['fulfillment_type']][$order['fulfillment_status']] ?? [];
-            if (!in_array($to, $allowed, true)) throw new BusinessException('履约状态流转不合法', 40924, 409);
-            if (in_array($order['fulfillment_type'], ['delivery', 'takeaway'], true) && !in_array($order['status'], ['ready', 'fulfilling'], true)) {
-                throw new BusinessException('餐点尚未备好，不能开始履约', 40929, 409);
-            }
-            if ($order['fulfillment_type'] === 'dine_in') {
-                if ($to === 'seated' && !in_array($order['status'], ['confirmed', 'preparing', 'ready', 'fulfilling'], true)) throw new BusinessException('订单尚未确认，不能安排入座', 40929, 409);
-                if ($to === 'served' && !in_array($order['status'], ['ready', 'fulfilling'], true)) throw new BusinessException('餐点尚未备好，不能确认上菜', 40929, 409);
-                if ($to === 'dine_completed' && $order['status'] !== 'fulfilling') throw new BusinessException('订单尚未上菜，不能完成堂食', 40929, 409);
-            }
+            $this->fulfillmentPolicy->assertCanTransition($order['fulfillment_type'], $order['fulfillment_status'], $to, $order['status']);
             $changes = ['fulfillment_status' => $to];
             if ($order['fulfillment_type'] === 'dine_in' && $to === 'seated') {
                 $table = Db::name('dining_tables')->where('id', (int)$tableId)->where('status', 'active')->find();
                 if (!$table || (int)$table['capacity'] < (int)$order['people_count']) throw new BusinessException('桌台无效或容量不足', 40925, 409);
                 $changes['table_id'] = $table['id'];
             }
-            if (in_array($to, ['delivering', 'waiting_pickup', 'waiting_arrival', 'seated', 'served'], true) && $order['status'] === 'ready') $changes['status'] = 'fulfilling';
-            if (in_array($to, ['delivered', 'picked_up', 'dine_completed'], true)) $changes['status'] = 'completed';
+            $resultingStatus = $this->fulfillmentPolicy->resultingOrderStatus($order['status'], $to);
+            if ($resultingStatus !== $order['status']) $changes['status'] = $resultingStatus;
             Db::name('orders')->where('id', $orderId)->update($changes);
             if (isset($changes['status']) && $changes['status'] !== $order['status']) {
                 Db::name('order_status_logs')->insert(['order_id' => $orderId, 'from_status' => $order['status'], 'to_status' => $changes['status'], 'operator_type' => 'admin', 'operator_id' => $operatorId, 'reason' => "履约状态更新为 {$to}"]);
@@ -147,12 +141,10 @@ final class OrderService
 
     public function updatePayment(int $orderId, string $paymentStatus, int $operatorId): array
     {
-        if (!in_array($paymentStatus, ['unpaid', 'paid', 'refunded'], true)) throw new BusinessException('支付状态无效', 40025);
         return Db::transaction(function () use ($orderId, $paymentStatus, $operatorId): array {
             $order = Db::name('orders')->lock(true)->where('id', $orderId)->find();
             if (!$order) throw new BusinessException('订单不存在', 40420, 404);
-            if ($order['status'] === 'cancelled' && $paymentStatus === 'paid') throw new BusinessException('已取消订单不能确认收款', 40926, 409);
-            if ($paymentStatus === 'refunded' && $order['payment_status'] !== 'paid') throw new BusinessException('只有已支付订单可以退款', 40927, 409);
+            $this->paymentPolicy->assertCanChange($order['status'], $order['payment_status'], $paymentStatus);
             Db::name('orders')->where('id', $orderId)->update(['payment_status' => $paymentStatus]);
             Db::name('operation_logs')->insert(['user_id' => $operatorId, 'action' => 'order.payment.update', 'target_type' => 'order', 'target_id' => (string)$orderId, 'detail' => json_encode(['from' => $order['payment_status'], 'to' => $paymentStatus], JSON_UNESCAPED_UNICODE)]);
             return $this->detail($orderId);
@@ -169,7 +161,7 @@ final class OrderService
             $slot = Db::name('time_slots')->lock(true)->where('id', $timeSlotId)->find();
             if (!$slot || (int)$slot['session_id'] !== (int)$order['session_id'] || $slot['fulfillment_type'] !== $order['fulfillment_type'] || $slot['status'] !== 'active') throw new BusinessException('目标时段无效', 40026);
             $units = (int)$order['people_count'];
-            if ((int)$slot['used_capacity'] + $units > (int)$slot['capacity']) throw new BusinessException('目标时段容量不足', 40914, 409);
+            $this->availabilityPolicy->assertCapacity((int)$slot['used_capacity'], (int)$slot['capacity'], $units);
             Db::name('time_slots')->where('id', $order['time_slot_id'])->dec('used_capacity', $units)->update();
             Db::name('time_slots')->where('id', $timeSlotId)->inc('used_capacity', $units)->update();
             Db::name('orders')->where('id', $orderId)->update(['time_slot_id' => $timeSlotId]);
@@ -204,7 +196,7 @@ final class OrderService
         $slot = Db::name('time_slots')->where('id', (int)$payload['time_slot_id'])->lock($reserve)->find();
         if (!$slot || (int)$slot['session_id'] !== (int)$session['id'] || $slot['fulfillment_type'] !== $type || $slot['status'] !== 'active') throw new BusinessException('预约时段无效', 40014);
         $units = $type === 'dine_in' ? (int)($payload['people_count'] ?? 0) : 1;
-        if ($units < 1 || $units > 50 || (int)$slot['used_capacity'] + $units > (int)$slot['capacity']) throw new BusinessException('预约时段容量不足', 40914, 409);
+        $this->availabilityPolicy->assertCapacity((int)$slot['used_capacity'], (int)$slot['capacity'], $units);
 
         $ids = array_map(fn ($i) => (int)($i['product_id'] ?? 0), $payload['items']);
         if (count($ids) !== count(array_unique($ids))) throw new BusinessException('购物车存在重复商品', 40015);
@@ -215,8 +207,7 @@ final class OrderService
         foreach ($payload['items'] as $requested) {
             $id = (int)$requested['product_id']; $quantity = (int)$requested['quantity']; $row = $byId[$id] ?? null;
             if (!$row || $row['status'] !== 'active' || $row['product_status'] !== 'active') throw new BusinessException("商品 {$id} 不可售", 40915, 409);
-            if ($quantity < 1 || $quantity > 99) throw new BusinessException('商品数量必须为 1-99', 40011);
-            if ($row['stock'] !== null && (int)$row['sold_qty'] + $quantity > (int)$row['stock']) throw new BusinessException("商品 {$row['name']} 库存不足", 40916, 409);
+            $this->availabilityPolicy->assertStock($row['stock'] === null ? null : (int)$row['stock'], (int)$row['sold_qty'], $quantity, $row['name']);
             $items[] = ['product_id' => $id, 'name' => $row['name'], 'type' => $row['type'], 'unit_price' => $row['sale_price'], 'quantity' => $quantity];
         }
         $zone = null; $fee = 0;
@@ -264,8 +255,4 @@ final class OrderService
         return $order;
     }
 
-    private function initialFulfillmentStatus(string $type): string
-    {
-        return ['delivery' => 'waiting_delivery', 'takeaway' => 'waiting_pickup', 'dine_in' => 'waiting_arrival'][$type];
-    }
 }

@@ -45,8 +45,8 @@ export interface Dashboard {
   }>
   slot_capacity: Array<{
     id: number
-    meal_type: string
-    fulfillment_type: string
+    meal_type: MealType
+    fulfillment_type: FulfillmentType
     start_time: string
     end_time: string
     capacity: number
@@ -56,9 +56,9 @@ export interface Dashboard {
     id: number
     order_no: string
     fulfillment_code?: string
-    fulfillment_type: string
-    status: string
-    payment_status: string
+    fulfillment_type: FulfillmentType
+    status: OrderStatus
+    payment_status: PaymentStatus
     customer_name: string
     payable_amount: string
     updated_at: string
@@ -66,17 +66,11 @@ export interface Dashboard {
     reason: string
   }>
 }
-export interface OrderItem {
-  id: number
-  product_name: string
-  unit_price: string
-  quantity: number
-  total_amount: string
-}
+export type OrderItem = OrderItemDto
 export interface StatusLog {
   id: number
   from_status: string | null
-  to_status: string
+  to_status: OrderStatus
   reason?: string
   created_at: string
 }
@@ -89,11 +83,11 @@ export interface Order {
   table_id?: number
   table_no?: string
   service_date: string
-  meal_type: string
-  fulfillment_type: string
-  fulfillment_status: string
-  status: string
-  payment_status: string
+  meal_type: MealType
+  fulfillment_type: FulfillmentType
+  fulfillment_status: FulfillmentStatus
+  status: OrderStatus
+  payment_status: PaymentStatus
   customer_name: string
   customer_phone: string
   address?: string
@@ -108,12 +102,14 @@ export interface Order {
   items?: OrderItem[]
   status_logs?: StatusLog[]
 }
-export interface PageData<T> {
-  total: number
-  per_page: number
-  current_page: number
-  last_page: number
-  data: T[]
-}
+export type PageData<T> = SharedPageData<T>
 export type ResourceName =
   'categories' | 'products' | 'sessions' | 'time-slots' | 'delivery-zones' | 'tables'
+import type { PageData as SharedPageData, OrderItemDto } from '@budapest/api-types'
+import type {
+  FulfillmentStatus,
+  FulfillmentType,
+  MealType,
+  OrderStatus,
+  PaymentStatus,
+} from '@budapest/shared'

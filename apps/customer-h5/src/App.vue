@@ -6,6 +6,7 @@ import { useCountdown } from './composables/useCountdown'
 import { useGoogleMapsAddress } from './composables/useGoogleMapsAddress'
 import type { CartItem, FulfillmentType, MenuData, Order, Session } from './types'
 import { readStorage, writeStorage } from './utils/storage'
+import { formatHuf, languageLocale } from '@budapest/shared'
 
 type Page = 'menu' | 'checkout' | 'success' | 'lookup'
 const page = ref<Page>('menu')
@@ -333,8 +334,7 @@ function messageOf(e: unknown) {
   return e instanceof Error ? e.message : '发生未知错误'
 }
 function formatDate(value: string) {
-  const locale = { zh: 'zh-CN', en: 'en-GB', hu: 'hu-HU' }[language.value]
-  return new Intl.DateTimeFormat(locale, {
+  return new Intl.DateTimeFormat(languageLocale(language.value), {
     month: 'short',
     day: 'numeric',
     weekday: 'short',
@@ -347,11 +347,7 @@ function time(value: string) {
   return value.slice(0, 5)
 }
 function money(value: string | number | undefined) {
-  return new Intl.NumberFormat('hu-HU', {
-    style: 'currency',
-    currency: 'HUF',
-    maximumFractionDigits: 0,
-  }).format(Number(value || 0))
+  return formatHuf(value)
 }
 
 let orderRefreshTimer: number | undefined
